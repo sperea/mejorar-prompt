@@ -16,14 +16,19 @@ const FORMATO_OPCIONES = [
   { value: "Lista", label: "Lista" },
   { value: "HTML", label: "HTML" },
   { value: "Texto narrativo", label: "Texto narrativo" },
-];
-
-const TONO_OPCIONES = [
-  { value: "", label: "Sin preferencia" },
-  { value: "Formal y técnico", label: "Formal / técnico" },
-  { value: "Cercano y conversacional", label: "Cercano" },
-  { value: "Creativo", label: "Creativo" },
-  { value: "Neutro y directo", label: "Neutro" },
+  {
+    value: "Tabla en formato CSV lista para pegar/abrir en Excel",
+    label: "Excel / CSV",
+  },
+  {
+    value:
+      "Documento tipo informe con títulos, subtítulos y párrafos, listo para pegar en Word",
+    label: "Word",
+  },
+  { value: "YAML", label: "YAML" },
+  { value: "Bloque de código", label: "Código" },
+  { value: "Correo electrónico con asunto y cuerpo", label: "Email" },
+  { value: "Diapositivas / slides con título y bullets por slide", label: "Slides" },
 ];
 
 export default function Home() {
@@ -169,9 +174,27 @@ export default function Home() {
             Mejorar Prompt
           </h1>
           <p className="text-sm text-zinc-500 mt-1">
-            Orquestador guiado por DeepSeek: idea → preguntas → prompt cocinado.
+            Convierte una idea suelta en un prompt profesional, listo para
+            usar en ChatGPT, Claude o cualquier IA.
           </p>
         </header>
+
+        {turns.length === 0 && !finalPrompt && (
+          <ol className="flex flex-col gap-2 rounded-xl border border-zinc-200 dark:border-zinc-800 bg-white dark:bg-zinc-900 p-4 text-sm text-zinc-600 dark:text-zinc-400 list-decimal list-inside">
+            <li>
+              Escribe abajo qué quieres conseguir con tu prompt, aunque sea
+              una idea vaga o desordenada.
+            </li>
+            <li>
+              Te haré 1-3 preguntas cortas para afinar audiencia, contexto o
+              detalles que falten.
+            </li>
+            <li>
+              Recibirás un <strong>prompt maestro</strong> completo y
+              estructurado, listo para copiar y pegar en tu IA favorita.
+            </li>
+          </ol>
+        )}
 
         {!finalPrompt && (
           <div className="flex flex-col gap-4">
@@ -205,6 +228,14 @@ export default function Home() {
                 rondas. Revisa las secciones marcadas.
               </div>
             )}
+            <div>
+              <h2 className="text-sm font-semibold text-black dark:text-zinc-50">
+                Tu prompt optimizado
+              </h2>
+              <p className="text-xs text-zinc-500 mt-0.5">
+                Cópialo tal cual y pégalo en el chat de tu IA favorita.
+              </p>
+            </div>
             <div className="rounded-xl border border-zinc-200 dark:border-zinc-800 bg-white dark:bg-zinc-900 p-5">
               <PromptCocinado texto={finalPrompt} />
             </div>
@@ -233,7 +264,7 @@ export default function Home() {
               rows={turns.length === 0 ? 5 : 3}
               placeholder={
                 turns.length === 0
-                  ? "Describe tu idea inicial..."
+                  ? "Ej: quiero un prompt para que la IA me ayude a redactar correos de ventas para clientes B2B..."
                   : "Responde a la pregunta..."
               }
               className="w-full resize-none rounded-xl border border-zinc-300 dark:border-zinc-700 bg-white dark:bg-zinc-900 px-4 py-3 text-sm text-black dark:text-zinc-50 focus:outline-none focus:ring-2 focus:ring-zinc-400"
@@ -244,19 +275,32 @@ export default function Home() {
                 <button
                   type="button"
                   onClick={() => setShowAdvanced((v) => !v)}
-                  className="w-full flex justify-between items-center px-4 py-2 text-xs font-medium text-zinc-500 hover:text-zinc-700 dark:hover:text-zinc-300"
+                  className="w-full flex justify-between items-center gap-3 px-4 py-3 text-left"
                 >
-                  <span>Preferencias de formato, tono y restricciones (opcional)</span>
-                  <span>{showAdvanced ? "▲" : "▼"}</span>
+                  <span className="text-sm font-medium text-black dark:text-zinc-50">
+                    ¿Ya sabes cómo quieres el resultado?{" "}
+                    <span className="font-normal text-zinc-500">
+                      Adelanta el formato, tono o límites y me ahorro
+                      preguntas (opcional)
+                    </span>
+                  </span>
+                  <span className="shrink-0 text-zinc-400 text-xs">
+                    {showAdvanced ? "▲" : "▼"}
+                  </span>
                 </button>
                 {showAdvanced && (
-                  <div className="flex flex-col gap-3 px-4 pb-4">
-                    <label className="flex flex-col gap-1 text-xs text-zinc-500">
-                      Formato de salida deseado
+                  <div className="flex flex-col gap-4 px-4 pb-4">
+                    <label className="flex flex-col gap-1">
+                      <span className="text-sm font-medium text-black dark:text-zinc-50">
+                        Formato de salida
+                      </span>
+                      <span className="text-xs text-zinc-500">
+                        ¿En qué forma debe entregarte el resultado la IA?
+                      </span>
                       <select
                         value={formato}
                         onChange={(e) => setFormato(e.target.value)}
-                        className="rounded-lg border border-zinc-300 dark:border-zinc-700 bg-white dark:bg-zinc-900 px-3 py-2 text-sm text-black dark:text-zinc-50 focus:outline-none focus:ring-2 focus:ring-zinc-400"
+                        className="mt-1 rounded-lg border border-zinc-300 dark:border-zinc-700 bg-white dark:bg-zinc-900 px-3 py-2 text-sm text-black dark:text-zinc-50 focus:outline-none focus:ring-2 focus:ring-zinc-400"
                       >
                         {FORMATO_OPCIONES.map((o) => (
                           <option key={o.label} value={o.value}>
@@ -266,29 +310,37 @@ export default function Home() {
                       </select>
                     </label>
 
-                    <label className="flex flex-col gap-1 text-xs text-zinc-500">
-                      Tono y estilo
-                      <select
+                    <label className="flex flex-col gap-1">
+                      <span className="text-sm font-medium text-black dark:text-zinc-50">
+                        Tono y estilo
+                      </span>
+                      <span className="text-xs text-zinc-500">
+                        ¿Cómo debe sonar el texto? Ej: formal y técnico,
+                        cercano y directo, creativo...
+                      </span>
+                      <input
+                        type="text"
                         value={tono}
                         onChange={(e) => setTono(e.target.value)}
-                        className="rounded-lg border border-zinc-300 dark:border-zinc-700 bg-white dark:bg-zinc-900 px-3 py-2 text-sm text-black dark:text-zinc-50 focus:outline-none focus:ring-2 focus:ring-zinc-400"
-                      >
-                        {TONO_OPCIONES.map((o) => (
-                          <option key={o.label} value={o.value}>
-                            {o.label}
-                          </option>
-                        ))}
-                      </select>
+                        placeholder="Escribe el tono con tus palabras..."
+                        className="mt-1 rounded-lg border border-zinc-300 dark:border-zinc-700 bg-white dark:bg-zinc-900 px-3 py-2 text-sm text-black dark:text-zinc-50 focus:outline-none focus:ring-2 focus:ring-zinc-400"
+                      />
                     </label>
 
-                    <label className="flex flex-col gap-1 text-xs text-zinc-500">
-                      Restricciones y reglas (qué NO debe hacer, límites, etc.)
+                    <label className="flex flex-col gap-1">
+                      <span className="text-sm font-medium text-black dark:text-zinc-50">
+                        Restricciones y reglas
+                      </span>
+                      <span className="text-xs text-zinc-500">
+                        ¿Qué NO debe hacer la IA? Ej: no usar tecnicismos,
+                        máximo 300 palabras, no mencionar precios...
+                      </span>
                       <textarea
                         value={restricciones}
                         onChange={(e) => setRestricciones(e.target.value)}
                         rows={2}
-                        placeholder="Ej: no usar tecnicismos, máximo 300 palabras, no mencionar precios..."
-                        className="w-full resize-none rounded-lg border border-zinc-300 dark:border-zinc-700 bg-white dark:bg-zinc-900 px-3 py-2 text-sm text-black dark:text-zinc-50 focus:outline-none focus:ring-2 focus:ring-zinc-400"
+                        placeholder="Escribe aquí los límites o cosas a evitar..."
+                        className="mt-1 w-full resize-none rounded-lg border border-zinc-300 dark:border-zinc-700 bg-white dark:bg-zinc-900 px-3 py-2 text-sm text-black dark:text-zinc-50 focus:outline-none focus:ring-2 focus:ring-zinc-400"
                       />
                     </label>
                   </div>
